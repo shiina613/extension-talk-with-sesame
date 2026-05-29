@@ -1,40 +1,43 @@
 # STT Zipformer Extension
 
-Chrome Extension (Manifest V3) cho Speech-to-Text sử dụng model Zipformer streaming trên localhost. Hỗ trợ nhận dạng giọng nói tiếng Anh từ microphone và tab audio (Sesame AI), hiển thị kết quả dạng chat session.
-
-## Mục đích
-
-Hỗ trợ luyện tập tiếng Anh:
-- **Listening** — Hiển thị transcript của Sesame AI để đọc và hiểu nội dung
-- **Speaking** — Hiển thị transcript giọng nói của bạn để đánh giá phát âm
+Chrome Extension (Manifest V3) cho Speech-to-Text sử dụng model Zipformer streaming trên localhost. Nhận dạng giọng nói tiếng Anh từ microphone và audio của bất kỳ tab nào đang mở, hiển thị kết quả dạng chat session.
 
 ## Tính năng
 
 - 🎤 Thu âm microphone (Your Voice)
-- 🔊 Thu âm tab audio từ Sesame AI (Sesame Voice)
-- 💬 Hiển thị transcript dạng chat (You / Sesame)
+- 🔊 Thu âm audio từ bất kỳ tab nào (Tab Voice) — YouTube, Google Meet, Sesame AI, podcast, v.v.
+- 💬 Hiển thị transcript dạng chat (You / Tab)
 - 🔄 Conversation Mode — ghi âm đồng thời cả hai nguồn
 - 📋 Copy transcript ra clipboard
 - ⚡ Streaming real-time với latency thấp
-- 🐳 STT server chạy local trong Docker container
+- 🐳 STT server chạy local trong Docker — không cần internet
+- 🔒 Hoàn toàn offline — audio không rời khỏi máy bạn
+
+## Use Cases
+
+- Luyện phát âm tiếng Anh với AI voice assistants (Sesame, ChatGPT Voice, etc.)
+- Tạo transcript cho video YouTube
+- Ghi chú cuộc họp Google Meet / Zoom
+- Transcribe podcast hoặc audiobook
+- Bất kỳ nguồn audio nào phát trong browser
 
 ## Yêu cầu hệ thống
 
-- Windows 10/11
 - Google Chrome (phiên bản mới nhất)
 - Docker Desktop
 - Node.js 18+ (để build)
+- ~1GB RAM cho STT server
 
 ## Cài đặt
 
 ### 1. Clone và build extension
 
 ```bash
+git clone https://github.com/shiina613/extension-talk-with-sesame.git
+cd extension-talk-with-sesame
 npm install
 npm run build
 ```
-
-Extension được build vào thư mục `dist/`.
 
 ### 2. Khởi động STT Server
 
@@ -42,18 +45,14 @@ Extension được build vào thư mục `dist/`.
 docker compose up -d
 ```
 
-Server sẽ chạy tại `ws://localhost:6006`. Lần đầu build image sẽ tải model (~200MB).
+Lần đầu build image sẽ tải model (~200MB). Các lần sau chỉ start container, không tải lại.
 
-Kiểm tra server đang chạy:
-
-```bash
-docker compose ps
-```
-
-Dừng server:
+Kiểm tra server:
 
 ```bash
-docker compose down
+docker compose ps        # Xem trạng thái
+docker compose down      # Dừng server
+docker compose up -d     # Start lại
 ```
 
 ### 3. Load extension vào Chrome
@@ -65,14 +64,14 @@ docker compose down
 
 ## Sử dụng
 
-1. Đảm bảo STT server đang chạy (icon extension hiện trạng thái "Ready")
-2. Click icon extension để mở popup
+1. Start Docker server: `docker compose up -d`
+2. Click icon extension — đợi "Server ready" (vài giây)
 3. Chọn chế độ:
-   - **Mic** — Ghi âm giọng nói của bạn
-   - **Tab** — Ghi âm audio từ tab đang mở Sesame AI
-   - **Conversation Mode** — Ghi âm cả hai đồng thời
-4. Transcript hiển thị real-time dạng chat
-5. Click **Copy** để copy toàn bộ hội thoại ra clipboard
+   - **🎤 Mic** — Ghi âm giọng nói của bạn
+   - **🔊 Tab** — Ghi âm audio từ tab đang active
+   - **💬 Conversation** — Ghi âm cả hai đồng thời
+4. Transcript hiển thị real-time
+5. **📋 Copy** để copy hội thoại | **🗑️ Clear** để xóa | **➕ New** để tạo session mới
 
 ## Kiến trúc
 
@@ -96,94 +95,48 @@ docker compose down
 
 | Module | Chức năng |
 |--------|-----------|
-| `service-worker` | Orchestrator, quản lý lifecycle, message routing |
+| `service-worker` | Orchestrator, lifecycle, message routing |
 | `offscreen` | Audio capture + WebSocket trong background |
-| `audio-processor` | AudioWorklet resample 44.1/48kHz → 16kHz PCM |
-| `websocket-client` | Kết nối WebSocket đến STT server, reconnection |
-| `chat-ui` | Hiển thị transcript, session management, clipboard |
-| `config` | Validation và lưu trữ cấu hình |
+| `audio-processor` | AudioWorklet resample → 16kHz PCM |
+| `websocket-client` | WebSocket streaming + reconnection |
+| `chat-ui` | Chat display, session management, clipboard |
+| `config` | Config validation + storage |
 | `stt-server` | Health check server availability |
 
-Chi tiết kiến trúc: xem [docs/module-diagram.md](docs/module-diagram.md)
-
 ## Development
-
-### Scripts
 
 ```bash
 npm run build        # Build extension → dist/
 npm run build:watch  # Build với watch mode
-npm test             # Chạy tất cả tests (252 tests)
-npm run test:watch   # Chạy tests với watch mode
+npm test             # Chạy tests (258 tests)
+npm run test:watch   # Tests với watch mode
 npm run typecheck    # Type checking
 npm run clean        # Xóa dist/
 ```
 
-### Cấu trúc thư mục
-
-```
-src/
-  modules/
-    audio-processor/   # AudioWorklet + resampling
-    chat-ui/           # Popup UI + chat logic
-    config/            # Config validation + storage
-    offscreen/         # Offscreen document orchestration
-    service-worker/    # Background service worker
-    stt-server/        # Health checker
-    websocket-client/  # WebSocket client + reconnection
-  shared/
-    types/             # Shared TypeScript types
-    errors.ts          # Custom error classes
-    constants/         # Shared constants
-    interfaces/        # Module contracts
-    utils/             # Utility functions
-docker/
-  Dockerfile           # STT server image
-```
-
 ### Testing
 
-Project sử dụng Vitest với hai loại test:
-
-- **Unit tests** — Test specific edge cases và behavior
-- **Property-based tests** — Test correctness properties với [fast-check](https://github.com/dubzzz/fast-check)
-
-7 correctness properties được kiểm tra:
-1. Audio resampling preserves duration and format
-2. Audio chunking emits at correct boundaries
-3. WebSocket reconnection respects retry limits
-4. Chat messages are always chronologically ordered
-5. Rendered chat message contains all required fields
-6. Clipboard format is faithful representation
-7. Configuration validation correctly classifies inputs
+- **Unit tests** — Vitest
+- **Property-based tests** — fast-check (7 correctness properties)
+- Coverage: audio resampling, chunking, WebSocket reconnection, chat ordering, rendering, clipboard, config validation
 
 ## Cấu hình
-
-Extension hỗ trợ cấu hình qua popup settings:
 
 | Tùy chọn | Mặc định | Mô tả |
 |-----------|----------|-------|
 | Server Host | `localhost` | Host của STT server |
 | Server Port | `6006` | Port của STT server |
 | Audio Chunk Size | `500ms` | Kích thước chunk gửi đến server |
-| Model Path | — | Đường dẫn model (cần restart server) |
-
-## Giao thức WebSocket
-
-Extension giao tiếp với sherpa-onnx server qua WebSocket:
-
-- **Client → Server**: Binary frames (PCM int16, 16kHz, mono, little-endian)
-- **Server → Client**: Text frames (JSON với kết quả nhận dạng)
-- **End of stream**: Client gửi text frame `"Done"`
 
 ## Model
 
-Sử dụng model `sherpa-onnx-streaming-zipformer-en-2023-06-21` (int8):
+`sherpa-onnx-streaming-zipformer-en-2023-06-21` (int8):
 - Trained trên LibriSpeech + GigaSpeech
 - Encoder: 179MB (int8 quantized)
-- RTF: ~0.062 (real-time factor)
+- RTF: ~0.062
 - Streaming với endpoint detection tự động
+- Chỉ hỗ trợ tiếng Anh
 
 ## License
 
-Private project.
+MIT
