@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STT Zipformer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup">
+    <!-- Status Bar -->
+    <header class="status-bar" id="status-bar">
+      <span class="status-indicator" id="status-indicator"></span>
+      <span class="status-text" id="status-text">Connecting...</span>
+    </header>
+
+    <!-- Recording Indicators -->
+    <div class="recording-indicators" id="recording-indicators">
+      <span class="recording-badge recording-badge--mic hidden" id="mic-indicator">
+        <span class="recording-dot"></span> Your Voice
+      </span>
+      <span class="recording-badge recording-badge--tab hidden" id="tab-indicator">
+        <span class="recording-dot"></span> Sesame Voice
+      </span>
+    </div>
+
+    <!-- Chat Container -->
+    <main class="chat-container" id="chat-container">
+      <div class="chat-empty" id="chat-empty">
+        <p class="chat-empty__title">Ready to transcribe</p>
+        <ul class="chat-empty__steps">
+          <li><strong>Mic</strong> — practice your English (speak clearly)</li>
+          <li><strong>Tab</strong> — capture page audio (pick the tab in Chrome’s dialog)</li>
+          <li><strong>Chat</strong> — both mic + tab together</li>
+        </ul>
+        <p class="chat-empty__hint">Model is English-only. Transcript appears here in real time.</p>
+      </div>
+      <div class="chat-listening hidden" id="chat-listening">
+        <div class="chat-listening__pulse"></div>
+        <p class="chat-listening__title">Listening…</p>
+        <p class="chat-listening__hint" id="chat-listening-hint">Waiting for English speech in the audio stream.</p>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+    </main>
+
+    <!-- Control Buttons -->
+    <footer class="controls">
+      <div class="controls__row">
+        <button class="btn btn--mic" id="btn-mic" title="Toggle microphone">
+          <span class="btn__icon">🎤</span>
+        </button>
+        <button class="btn btn--tab" id="btn-tab" title="Toggle tab capture">
+          <span class="btn__icon">🔊</span>
+        </button>
+        <button class="btn btn--conversation" id="btn-conversation" title="Conversation mode">
+          <span class="btn__icon">💬</span>
+        </button>
+      </div>
+      <div class="controls__row controls__row--secondary">
+        <button class="btn btn--copy" id="btn-copy" title="Copy transcript">
+          <span class="btn__icon">📋</span>
+        </button>
+        <button class="btn btn--clear" id="btn-clear" title="Clear session">
+          <span class="btn__icon">🗑️</span>
+        </button>
+        <button class="btn btn--new-session" id="btn-new-session" title="New session">
+          <span class="btn__icon">➕</span>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

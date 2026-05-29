@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "STT Zipformer",
+  "version": "1.0.1",
+  "description": "Speech-to-text for English practice using local Zipformer STT server",
+  "permissions": [
+    "tabCapture",
+    "offscreen",
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "ws://localhost/*",
+    "ws://127.0.0.1/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["audio-processor.worklet.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "STT Zipformer"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Update Module Diagram",
+  "description": "Sau khi hoàn thành một task, nhắc agent cập nhật sơ đồ khối tại .kiro/docs/module-diagram.md nếu có module mới hoặc thay đổi input/output",
+  "version": "1",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Kiểm tra xem task vừa hoàn thành có tạo module mới hoặc thay đổi input/output của module nào không. Nếu có, cập nhật file docs/module-diagram.md theo format Mermaid flowchart: mỗi khối gồm tên module, IN: InputType, OUT: OutputType, và mũi tên kết nối giữa các khối với label là kiểu data truyền."
+  }
+}

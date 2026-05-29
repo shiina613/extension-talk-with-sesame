@@ -1,0 +1,14 @@
+services:
+  stt-server:
+    build: ./docker
+    container_name: stt-zipformer-server
+    ports:
+      - "6006:6006"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    volumes:
+      # Optional: mount custom model files
+      - ./models:/models:ro
